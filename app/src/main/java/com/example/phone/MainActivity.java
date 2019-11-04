@@ -10,11 +10,11 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -89,12 +89,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                    intent.setData(Uri.parse("tel:" + str));
                    startActivity(intent);
                }
-
                break;
 
            case R.id.message:
-               Log.e("eeeee", "onClick: message" );
-               break;
+               Intent intent = new Intent(this, MessageActivity.class);
+               Bundle bundle = new Bundle();
+               bundle.putCharSequence("number",str);
+               intent.putExtras(bundle);
+               startActivity(intent);
        }
     }
 }
