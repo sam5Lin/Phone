@@ -63,6 +63,7 @@
             android:layout_height="0dp"
             android:hint="请输入短信内容"
             android:id="@+id/m_content"
+            android:background="@drawable/editshape"
             />
 
         <LinearLayout

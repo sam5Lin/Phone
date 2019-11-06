@@ -1,5 +1,6 @@
 package com.example.phone;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -7,20 +8,31 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView number;
     private StringBuffer str;
     private Button btn;
+    private ArrayAdapter<String> adapter;
+    private List<String> contactsList=new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +54,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.zero).setOnClickListener(this);
         findViewById(R.id.star).setOnClickListener(this);
         findViewById(R.id.back).setOnClickListener(this);
+        findViewById(R.id.back).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                str.delete(0, str.length());
+                number.setText(str);
+                return true;
+            }
+        });
+
+
+        //获取到listview并且设置适配器
+        ListView contactsView= (ListView) findViewById(R.id.contacts_view);
+        adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,contactsList);
+        contactsView.setAdapter(adapter);
+
+        //判断是否开启读取通讯录的权限
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager
+                .PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},1);
+        }else {
+            readContacts();
+        }
+        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String n = contactsList.get(position);
+                String[] nn = n.split("\n");
+                str.delete(0,str.length());
+                str.append(nn[1]);
+                number.setText(str);
+                call();
+
+            }
+        });
 
     }
 
@@ -72,23 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                break;
 
            case R.id.call:
-               if (ContextCompat.checkSelfPermission(this,Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
-                    //首先判断否获取了权限
-                   if (ActivityCompat.shouldShowRequestPermissionRationale( this,Manifest.permission.CALL_PHONE)) {
-                    //让用户手动授权
-                       Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                       Uri uri = Uri.fromParts("package", getPackageName(), null);
-                       intent.setData(uri);
-                       startActivity(intent);
-                   }else{
-                       ActivityCompat.requestPermissions( this,new String[]{Manifest.permission.CALL_PHONE},1);
-                   }
-               }else {
-                   Intent intent = new Intent();
-                   intent.setAction(Intent.ACTION_CALL);
-                   intent.setData(Uri.parse("tel:" + str));
-                   startActivity(intent);
-               }
+               call();
                break;
 
            case R.id.message:
@@ -97,6 +128,86 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                bundle.putCharSequence("number",str);
                intent.putExtras(bundle);
                startActivity(intent);
+               break;
+           case R.id.contacts_view:
+               break;
        }
     }
+
+    private void call(){
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
+            //首先判断否获取了权限
+            if (ActivityCompat.shouldShowRequestPermissionRationale( this,Manifest.permission.CALL_PHONE)) {
+                //让用户手动授权
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }else{
+                ActivityCompat.requestPermissions( this,new String[]{Manifest.permission.CALL_PHONE},1);
+            }
+        }else {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_CALL);
+            intent.setData(Uri.parse("tel:" + str));
+            startActivity(intent);
+        }
+    }
+
+    private void readContacts() {
+        Cursor cursor=null;
+        try {
+            //查询联系人数据,使用了getContentResolver().query方法来查询系统的联系人的数据
+            //CONTENT_URI就是一个封装好的Uri，是已经解析过得常量
+            cursor=getContentResolver().query(
+                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+            //对cursor进行遍历，取出姓名和电话号码
+
+            if (cursor!=null){
+                while (cursor.moveToNext()){
+                    //获取联系人姓名
+                    String displayName=cursor.getString(cursor.getColumnIndex(
+                            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                    ));
+                    //获取联系人手机号
+                    String number=cursor.getString(cursor.getColumnIndex(
+                            ContactsContract.CommonDataKinds.Phone.NUMBER
+                    )).trim();
+                    //把取出的两类数据进行拼接，中间加换行符，然后添加到listview中
+                    contactsList.add(displayName + '\n' + number);
+                }
+                //刷新listview
+                adapter.notifyDataSetChanged();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            //记得关掉cursor
+            if (cursor!=null){
+                cursor.close();
+            }
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    readContacts();
+                }else {
+                    Toast.makeText(this,"没有权限", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
 }
