@@ -28,7 +28,7 @@
         android:layout_weight="3"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="收信人："
+        android:text="收信人"
         android:textSize="25dp"
         android:gravity="center"/>
     <EditText
@@ -38,13 +38,14 @@
         android:textColor="#03A9F4"
         android:textSize="30sp"
         android:gravity="center"
-        android:id="@+id/m_number"/>
+        android:id="@+id/m_number"
+        />
 
 </LinearLayout>
 
     <LinearLayout
         android:background="#ffffff"
-        android:layout_weight="1"
+        android:layout_weight="5"
         android:layout_width="match_parent"
         android:layout_height="0dp">
 
@@ -58,7 +59,7 @@
 
         <EditText
             android:gravity="top"
-            android:layout_weight="5"
+            android:layout_weight="0.3"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:hint="请输入短信内容"

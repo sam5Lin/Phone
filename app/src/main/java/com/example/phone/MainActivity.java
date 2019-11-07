@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -64,31 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-        //获取到listview并且设置适配器
-        ListView contactsView= (ListView) findViewById(R.id.contacts_view);
-        adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,contactsList);
-        contactsView.setAdapter(adapter);
-
-        //判断是否开启读取通讯录的权限
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager
-                .PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},1);
-        }else {
-            readContacts();
-        }
-        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String n = contactsList.get(position);
-                String[] nn = n.split("\n");
-                str.delete(0,str.length());
-                str.append(nn[1]);
-                number.setText(str);
-                call();
-
-            }
-        });
+      contactsInit();
 
     }
 
@@ -132,6 +111,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
            case R.id.contacts_view:
                break;
        }
+    }
+
+    private void contactsInit(){
+        //获取到listview并且设置适配器
+        ListView contactsView= (ListView) findViewById(R.id.contacts_view);
+        adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,contactsList);
+        contactsView.setAdapter(adapter);
+
+        //判断是否开启读取通讯录的权限
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager
+                .PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},1);
+        }else {
+            readContacts();
+        }
+
+        contactsList.sort(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                Log.e("e--->", o1 + " " + o2 );
+                String[] nn1 = o1.split("\n");
+                String[] nn2 = o2.split("\n");
+                Log.e("首字母->", nn1[0] + " " + nn2[0] );
+                return PinyinUtils.sort(nn1[0], nn2[0]);
+            }
+        });
+
+
+        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String n = contactsList.get(position);
+                String[] nn = n.split("\n");
+                str.delete(0,str.length());
+                str.append(nn[1]);
+                number.setText(str);
+                call();
+
+            }
+        });
     }
 
     private void call(){
