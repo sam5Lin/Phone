@@ -14,7 +14,7 @@
 
     <stroke
         android:width="5px"
-        android:color="#070707" />
+        android:color="#ACA9A9" />
 
     <solid android:color="#FDFCFC" />
 

@@ -2,24 +2,31 @@ package com.example.phone;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MessageActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText phone;
     private EditText content;
-    private Button send;
+    private ImageButton send;
     private String number;
     private String message;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_message);
 
         phone = findViewById(R.id.m_number);
@@ -29,10 +36,27 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
         phone.setText(number);
 
         content = findViewById(R.id.m_content);
-        send = findViewById(R.id.send);
+
         findViewById(R.id.back1).setOnClickListener(this);
         content.setOnClickListener(this);
+
+        send = findViewById(R.id.send);
         send.setOnClickListener(this);
+
+        if(phone.getText().toString().equals("")){
+            phone.requestFocus();
+            phone.setFocusable(true);
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+        else if(content.getText().toString().equals("")){
+            content.requestFocus();
+            content.setFocusable(true);
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
+
     }
 
     @Override
@@ -46,6 +70,7 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
                 //关闭Activity
                 MessageActivity.this.finish();
                 break;
+
             case R.id.send:
                 number = phone.getText().toString();
                 message = content.getText().toString();
@@ -55,6 +80,7 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
                 intent1.putExtra("sms_body", message);              //设置发送的内容
                 startActivity(intent1);                               //启动 Activity
                 break;
+
         }
 
     }

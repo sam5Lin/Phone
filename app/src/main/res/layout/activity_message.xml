@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MessageActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
 
 <LinearLayout
     android:layout_weight="1"
@@ -16,7 +17,7 @@
 
     >
     <ImageButton
-        android:background="#fffff7"
+        android:background="@null"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -25,6 +26,7 @@
         />
 
     <TextView
+        android:background="@null"
         android:layout_weight="3"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -36,9 +38,10 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:textColor="#03A9F4"
-        android:textSize="30sp"
+        android:textSize="28sp"
         android:gravity="center"
         android:id="@+id/m_number"
+        android:background="@null"
         />
 
 </LinearLayout>
@@ -57,32 +60,37 @@
         android:layout_height="0dp"
         android:orientation="vertical">
 
-        <EditText
-            android:gravity="top"
-            android:layout_weight="0.3"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:hint="请输入短信内容"
-            android:id="@+id/m_content"
-            android:background="@drawable/editshape"
-            />
-
         <LinearLayout
             android:background="#ffffff"
             android:layout_weight="3"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:orientation="vertical"
-            android:gravity="center"
+            android:orientation="horizontal"
+            android:gravity="bottom"
             >
 
-            <Button
-                android:background="#00BCD4"
-                android:layout_width="wrap_content"
-                android:layout_height="100dp"
-                android:text="发送短信"
-                android:id="@+id/send"/>
+            <EditText
+                android:layout_marginStart="10dp"
+                android:layout_weight="6"
+                android:id="@+id/m_content"
+                android:layout_width="0dp"
+                android:layout_height="45dip"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8.0dip"
+                android:layout_marginBottom="8.0dip"
+                android:background="@drawable/editshape"
+                android:hint="请输入短信内容"
+                android:inputType="textMultiLine" />
 
+            <ImageButton
+                android:layout_weight="1"
+                android:id="@+id/send"
+                android:layout_width="0dp"
+                android:layout_height="50dip"
+                android:layout_marginBottom="25.0dip"
+                android:src="@mipmap/love"
+                android:background="#ffffff"
+               />
         </LinearLayout>
 
     </LinearLayout>
