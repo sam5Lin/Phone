@@ -35,6 +35,8 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int PERMISS_CONTACT = 1;
+    private static final int PERMISS_SMS = 2;
     private TextView number;
     private StringBuffer str;
     private Button btn;
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        contactsInit();
         number = findViewById(R.id.number);
         str = new StringBuffer();
 
@@ -72,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-      contactsInit();
 
     }
 
@@ -107,13 +110,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                break;
 
            case R.id.message:
-               Intent intent = new Intent(this, MessageActivity.class);
-               Bundle bundle = new Bundle();
-               bundle.putCharSequence("number",str);
-               intent.putExtras(bundle);
-               startActivity(intent);
-               break;
-           case R.id.contacts_view:
+                   Intent intent = new Intent(this, MessageActivity.class);
+                   Bundle bundle = new Bundle();
+                   bundle.putCharSequence("number", str);
+                   intent.putExtras(bundle);
+                   startActivity(intent);
                break;
        }
     }
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ListView contactsView= (ListView) findViewById(R.id.contacts_view);
         adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,contactsList);
         contactsView.setAdapter(adapter);
+
 
         //判断是否开启读取通讯录的权限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)!= PackageManager
@@ -135,10 +137,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         contactsList.sort(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                Log.e("e--->", o1 + " " + o2 );
                 String[] nn1 = o1.split("\n");
                 String[] nn2 = o2.split("\n");
-                Log.e("首字母->", nn1[0] + " " + nn2[0] );
                 return PinyinUtils.sort(nn1[0], nn2[0]);
             }
         });
@@ -164,12 +164,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //首先判断否获取了权限
             if (ActivityCompat.shouldShowRequestPermissionRationale( this,Manifest.permission.CALL_PHONE)) {
                 //让用户手动授权
+                Log.e("e--->", "call: 手动授权" );
                 Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                 Uri uri = Uri.fromParts("package", getPackageName(), null);
                 intent.setData(uri);
                 startActivity(intent);
+
             }else{
-                ActivityCompat.requestPermissions( this,new String[]{Manifest.permission.CALL_PHONE},1);
+                ActivityCompat.requestPermissions( this,new String[]{Manifest.permission.CALL_PHONE},2);
             }
         }else {
             Intent intent = new Intent();
@@ -204,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             ContactsContract.CommonDataKinds.Phone.NUMBER
                     )).trim();
 
-
                     //把取出的两类数据进行拼接，中间加换行符，然后添加到listview中
                     contactsList.add(displayName + '\n' + number );
                 }
@@ -222,6 +223,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
@@ -229,9 +233,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     readContacts();
                 }else {
-                    Toast.makeText(this,"没有权限", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"读取通讯录没有权限", Toast.LENGTH_SHORT).show();
                 }
                 break;
+
             default:
                 break;
         }

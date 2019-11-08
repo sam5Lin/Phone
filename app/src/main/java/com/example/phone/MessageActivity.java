@@ -1,6 +1,8 @@
 package com.example.phone;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -25,11 +27,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.security.acl.Permission;
 import java.util.ArrayList;
 
 public class MessageActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PICK_CONTACT = 1;
-    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 2;
     private EditText phone;
     private EditText content;
     private ImageButton send;
@@ -40,6 +42,7 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_message);
+
 
         phone = findViewById(R.id.m_number);
         Intent intent = getIntent();
@@ -55,13 +58,13 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
         send = findViewById(R.id.send);
         send.setOnClickListener(this);
 
-        if(phone.getText().toString().equals("")){
+        if("".equals(phone.getText().toString())){
             phone.requestFocus();
             phone.setFocusable(true);
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|
                     WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
-        else if(content.getText().toString().equals("")){
+        else if("".equals(content.getText().toString())){
             content.requestFocus();
             content.setFocusable(true);
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|
@@ -69,6 +72,7 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         findViewById(R.id.find).setOnClickListener(this);
+
     }
 
     @Override
@@ -86,14 +90,19 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.send:
                 number = phone.getText().toString();
                 message = content.getText().toString();
-                if(!"".equals(number) && !"".equals(message)){
-                    ArrayList<String > textContent = SmsManager.getDefault().divideMessage(message);
-                    for(String text : textContent){
-                        SmsManager.getDefault().sendTextMessage(number, null, text, null, null);
-                    }
+                if (!"".equals(number) && !"".equals(message)) {
+
+
+                    Uri smsToUri = Uri.parse("smsto:" + number);
+
+                    Intent intent1 = new Intent(Intent.ACTION_SENDTO, smsToUri);
+
+                    intent1.putExtra("sms_body", message);
+                    intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent1);
+
                 }
                 break;
-
             case R.id.find:
                 Intent intent2 = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 startActivityForResult(intent2, PICK_CONTACT);
@@ -102,21 +111,14 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
+
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case PICK_CONTACT:
-                Intent mIntent;
-                mIntent = data;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                    //申请授权，第一个参数为要申请用户授权的权限；第二个参数为requestCode 必须大于等于0，主要用于回调的时候检测，匹配特定的onRequestPermissionsResult。
-                    //可以从方法名requestPermissions以及第二个参数看出，是支持一次性申请多个权限的，系统会通过对话框逐一询问用户是否授权。
-                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
-
-                }else{
-                    //如果该版本低于6.0，或者该权限已被授予，它则可以继续读取联系人。
-                    getContacts(data);
-                }
+                getContacts(data);
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

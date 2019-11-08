@@ -39,7 +39,6 @@ public class PinyinUtils {
         // 获取ascii值
         int lhs_ascii = getPingYin(lname).toUpperCase().charAt(0);
         int rhs_ascii = getPingYin(rname).toUpperCase().charAt(0);
-        Log.e("进入排序--->", lhs_ascii + " " + rhs_ascii );
         // 判断若不是字母，则排在字母之后
         if (lhs_ascii < 65 || lhs_ascii > 90)
             return 1;
