@@ -10,39 +10,43 @@
     >
 
 <LinearLayout
-    android:layout_weight="1"
     android:layout_width="match_parent"
-    android:layout_height="0dp"
+    android:layout_height="50dp"
     android:orientation="horizontal"
 
     >
     <ImageButton
         android:background="@null"
-        android:layout_weight="1"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginHorizontal="10dp"
+        android:scaleType="fitXY"
+        android:layout_gravity="center"
         android:src="@mipmap/back1"
         android:id="@+id/back1"
         />
 
-    <TextView
-        android:background="@null"
-        android:layout_weight="3"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:text="收信人"
-        android:textSize="25dp"
-        android:gravity="center"/>
     <EditText
         android:layout_weight="6"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:textColor="#03A9F4"
-        android:textSize="28sp"
-        android:gravity="center"
+        android:textSize="20sp"
+        android:gravity="start|center"
         android:id="@+id/m_number"
         android:background="@null"
+        android:hint="收信人"
         />
+    <ImageButton
+
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@mipmap/person"
+        android:background="#ffffff"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="15dp"
+        android:scaleType="fitXY"
+        android:id="@+id/find"/>
 
 </LinearLayout>
 

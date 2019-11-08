@@ -2,11 +2,19 @@ package com.example.phone;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -17,7 +25,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class MessageActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int PICK_CONTACT = 1;
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 2;
     private EditText phone;
     private EditText content;
     private ImageButton send;
@@ -56,7 +68,7 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
                     WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
 
-
+        findViewById(R.id.find).setOnClickListener(this);
     }
 
     @Override
@@ -74,14 +86,85 @@ public class MessageActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.send:
                 number = phone.getText().toString();
                 message = content.getText().toString();
-                Intent intent1 = new Intent();                        //创建 Intent 实例
-                intent1.setAction(Intent.ACTION_SENDTO);             //设置动作为发送短信
-                intent1.setData(Uri.parse("smsto:"+number));           //设置发送的号码
-                intent1.putExtra("sms_body", message);              //设置发送的内容
-                startActivity(intent1);                               //启动 Activity
+                if(!"".equals(number) && !"".equals(message)){
+                    ArrayList<String > textContent = SmsManager.getDefault().divideMessage(message);
+                    for(String text : textContent){
+                        SmsManager.getDefault().sendTextMessage(number, null, text, null, null);
+                    }
+                }
                 break;
 
+            case R.id.find:
+                Intent intent2 = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(intent2, PICK_CONTACT);
+                break;
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case PICK_CONTACT:
+                Intent mIntent;
+                mIntent = data;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                    //申请授权，第一个参数为要申请用户授权的权限；第二个参数为requestCode 必须大于等于0，主要用于回调的时候检测，匹配特定的onRequestPermissionsResult。
+                    //可以从方法名requestPermissions以及第二个参数看出，是支持一次性申请多个权限的，系统会通过对话框逐一询问用户是否授权。
+                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                }else{
+                    //如果该版本低于6.0，或者该权限已被授予，它则可以继续读取联系人。
+                    getContacts(data);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    private void getContacts(Intent data) {
+        if (data == null) {
+            return;
+        }
+
+        Uri contactData = data.getData();
+        if (contactData == null) {
+            return;
+        }
+
+        String phoneNumber = "";
+
+        Uri contactUri = data.getData();
+        Cursor cursor = getContentResolver().query(contactUri, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            String hasPhone = cursor
+                    .getString(cursor
+                            .getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+            String id = cursor.getString(cursor
+                    .getColumnIndex(ContactsContract.Contacts._ID));
+            if (hasPhone.equalsIgnoreCase("1")) {
+                hasPhone = "true";
+            } else {
+                hasPhone = "false";
+            }
+            if (Boolean.parseBoolean(hasPhone)) {
+                Cursor phones = getContentResolver()
+                        .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID
+                                        + " = " + id, null, null);
+                while (phones.moveToNext()) {
+                    phoneNumber = phones
+                            .getString(phones
+                                    .getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                }
+                phones.close();
+            }
+            cursor.close();
+
+            phone.setText(phoneNumber);
+        }
     }
 }

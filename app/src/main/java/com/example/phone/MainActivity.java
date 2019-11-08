@@ -6,9 +6,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -23,6 +27,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -198,8 +203,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String number=cursor.getString(cursor.getColumnIndex(
                             ContactsContract.CommonDataKinds.Phone.NUMBER
                     )).trim();
+
+
                     //把取出的两类数据进行拼接，中间加换行符，然后添加到listview中
-                    contactsList.add(displayName + '\n' + number);
+                    contactsList.add(displayName + '\n' + number );
                 }
                 //刷新listview
                 adapter.notifyDataSetChanged();
